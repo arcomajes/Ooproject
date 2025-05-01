@@ -1,0 +1,498 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.OleDb;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml.Linq;
+
+namespace Access
+{
+    public partial class ProductsAdmin : Form
+    {
+        OleDbConnection? myConn;
+        OleDbDataAdapter? da;
+        OleDbCommand? cmd;
+        DataSet? ds;
+        int Gtotal = 0;
+        int n = 0;
+        int indexRow;
+        //string productCategory = "";
+        public ProductsAdmin()
+        {
+            InitializeComponent();
+        }
+        private void iconButtonProducts_Click(object sender, EventArgs e)
+        {
+            ProductsAdmin products = new ProductsAdmin();
+            products.Show();
+            this.Close();
+        }
+        private void buttonExit_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Save and Logout?", "EXIT", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                this.Close();
+                Form1 form1 = new Form1();
+                form1.Show();
+            }
+            else
+            {
+            }
+        }
+        private void iconButtonEmployee_Click(object sender, EventArgs e)
+        {
+            Admin ADmin = new Admin();
+            ADmin.Show();
+            this.Close();
+        }
+
+        private void buttonClearEntries_Click(object sender, EventArgs e)
+        {
+            textBoxID.Text = "";
+            textBoxName.Text = "";
+            textBoxPrice.Text = "";
+            textBoxStock.Text = "";
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            indexRow = e.RowIndex;
+            DataGridViewRow row = ProductsView.Rows[indexRow];
+            textBoxName.Text = row.Cells[0].Value.ToString();
+            textBoxPrice.Text = row.Cells[1].Value.ToString();
+            textBoxStock.Text = row.Cells[2].Value.ToString();
+            
+        }
+        private void ProductsView_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            indexRow = e.RowIndex;
+            DataGridViewRow row = ProductsView.Rows[indexRow];
+            textBoxID.Text = row.Cells[0].Value.ToString();
+            textBoxName.Text = row.Cells[1].Value.ToString();
+            textBoxPrice.Text = row.Cells[2].Value.ToString();
+            textBoxStock.Text = row.Cells[3].Value.ToString();
+        }
+        private void buttonBurger_Click(object sender, EventArgs e)
+        {
+            //productCategory = "Burgers";
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, Burger, Price, Stock FROM Burgers", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["Burger"].Width = 170;
+            ProductsView.Columns["Price"].Width = 160;
+            ProductsView.Columns["Stock"].Width = 160;
+
+
+        }
+        
+        private void buttonShake_Click(object sender, EventArgs e)
+        {
+            //productCategory = "Shakes";
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, Shake, Price, Stock FROM Shakes", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["Shake"].Width = 170;
+            ProductsView.Columns["Price"].Width = 160;
+            ProductsView.Columns["Stock"].Width = 160;
+        }
+
+
+        private void buttonAddOns_Click(object sender, EventArgs e)
+        {
+            //productCategory = "AddOns";
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, AddOn, Price, Stock FROM AddOns", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["AddOn"].Width = 170;
+            ProductsView.Columns["Price"].Width = 160;
+            ProductsView.Columns["Stock"].Width = 160;
+        }
+        private void buttonAddProducts_Click(object sender, EventArgs e)
+        {
+
+            //NIGANA RANI
+            try
+            {
+                string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+                string category = comboBox1.SelectedItem.ToString(); // get the selected category from the ComboBox
+                string query = "";
+
+                // check if textboxes are empty
+                if (string.IsNullOrEmpty(textBoxName.Text) || string.IsNullOrEmpty(textBoxPrice.Text) || string.IsNullOrEmpty(textBoxStock.Text))
+                {
+                    throw new Exception("Please fill in all fields");
+                }
+
+                if (category == "Burger")
+                {
+                    query = "INSERT INTO Burgers (Burger, Price, Stock) VALUES ('" + textBoxName.Text + "', " + textBoxPrice.Text + ", " + textBoxStock.Text + ")";
+                }
+                else if (category == "Shake")
+                {
+                    query = "INSERT INTO Shakes (Shake, Price, Stock) VALUES ('" + textBoxName.Text + "', " + textBoxPrice.Text + ", " + textBoxStock.Text + ")";
+                }
+                else if (category == "AddOns")
+                {
+                    query = "INSERT INTO AddOns (AddOn, Price, Stock) VALUES ('" + textBoxName.Text + "', " + textBoxPrice.Text + ", " + textBoxStock.Text + ")";
+                }
+                using (OleDbConnection connection = new OleDbConnection(connectionString))
+                {
+                    using (OleDbCommand command = new OleDbCommand(query, connection))
+                    {
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        MessageBox.Show("Product added successfully!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+        private DataTable GetBurgers()
+        {
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            string query = "SELECT * FROM Burgers";
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
+            {
+                using (OleDbDataAdapter adapter = new OleDbDataAdapter(query, connection))
+                {
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+                    return dataTable;
+                }
+            }
+        }
+
+        private DataTable GetShakes()
+        {
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            string query = "SELECT * FROM Shakes";
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
+            {
+                using (OleDbDataAdapter adapter = new OleDbDataAdapter(query, connection))
+                {
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+                    return dataTable;
+                }
+            }
+        }
+
+        private DataTable GetAddOns()
+        {
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            string query = "SELECT * FROM AddOns";
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
+            {
+                using (OleDbDataAdapter adapter = new OleDbDataAdapter(query, connection))
+                {
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+                    return dataTable;
+                }
+            }
+        }
+        private BindingSource BurgersBindingSource = new BindingSource();
+        private BindingSource ShakesBindingSource = new BindingSource();
+        private BindingSource AddOnsBindingSource = new BindingSource();
+
+        private void ProductsAdmin_Load(object sender, EventArgs e)
+        {
+            // set up the BindingSources for each table
+            BurgersBindingSource.DataSource = GetBurgers();
+            ProductsView.DataSource = BurgersBindingSource;
+
+            ShakesBindingSource.DataSource = GetShakes();
+            ProductsView.DataSource = ShakesBindingSource;
+
+            AddOnsBindingSource.DataSource = GetAddOns();
+            ProductsView.DataSource = AddOnsBindingSource;
+        }
+        private void buttonModify_Click(object sender, EventArgs e)
+        {
+            OleDbConnection myConn = new OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb");
+            myConn.Open();
+
+            // Update the stock of the burger
+            string burgerQuery = "UPDATE Burgers SET Stock = @1 WHERE Burger = @2";
+            OleDbCommand burgerCmd = new OleDbCommand(burgerQuery, myConn);
+            burgerCmd.Parameters.AddWithValue("@1", textBoxStock.Text);
+            burgerCmd.Parameters.AddWithValue("@2", textBoxName.Text);
+            burgerCmd.ExecuteNonQuery();
+
+            // Update the stock of the shake
+            string shakeQuery = "UPDATE Shakes SET Stock = @1 WHERE Shake = @2";
+            OleDbCommand shakeCmd = new OleDbCommand(shakeQuery, myConn);
+            shakeCmd.Parameters.AddWithValue("@1", textBoxStock.Text);
+            shakeCmd.Parameters.AddWithValue("@2", textBoxName.Text);
+            shakeCmd.ExecuteNonQuery();
+
+            string addOnQuery = "UPDATE AddOns SET Stock = @1 WHERE AddOn = @2";
+            OleDbCommand addOnCmd = new OleDbCommand(addOnQuery, myConn);
+            addOnCmd.Parameters.AddWithValue("@1", textBoxStock.Text);
+            addOnCmd.Parameters.AddWithValue("@2", textBoxName.Text);
+            addOnCmd.ExecuteNonQuery();
+            myConn.Close();
+
+            MessageBox.Show("Product have been modified!");
+        }
+
+        private void Refresh1_Click(object sender, EventArgs e)
+        {
+            ProductsView.DataSource = null;
+            ProductsView.Rows.Clear();
+            ProductsView.Columns.Clear();
+            ProductsView.Refresh();
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, Burger, Price, Stock FROM Burgers", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["Burger"].Width = 170;
+            ProductsView.Columns["Price"].Width = 160;
+            ProductsView.Columns["Stock"].Width = 160;
+        }
+
+        private void Refresh2_Click(object sender, EventArgs e)
+        {
+            ProductsView.DataSource = null;
+            ProductsView.Rows.Clear();
+            ProductsView.Columns.Clear();
+            ProductsView.Refresh();
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, Shake, Price, Stock FROM Shakes", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["Shake"].Width = 170;
+            ProductsView.Columns["Price"].Width = 160;
+            ProductsView.Columns["Stock"].Width = 160;
+        }
+
+        private void Refresh3_Click(object sender, EventArgs e)
+        {
+            ProductsView.DataSource = null;
+            ProductsView.Rows.Clear();
+            ProductsView.Columns.Clear();
+            ProductsView.Refresh();
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, AddOn, Price, Stock FROM AddOns", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["AddOn"].Width = 170;
+            ProductsView.Columns["Price"].Width = 160;
+            ProductsView.Columns["Stock"].Width = 160;
+        }
+
+        private void iconButtonHistory_Click(object sender, EventArgs e)
+        {
+            historyView history = new historyView();
+            history.Show();
+            this.Close();
+        }
+
+        private void iconButtonLogout_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Are you sure you want to log out?", "Log out", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                this.Close();
+                Form1 form1 = new Form1();
+                form1.Show();
+            }
+            else
+            {
+            }
+        }
+
+        private void buttonRemove_Click(object sender, EventArgs e)
+        {
+            
+            try
+            {
+                string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+                string category = comboBox1.SelectedItem.ToString(); // get the selected category from the ComboBox
+                string name = textBoxName.Text;
+                
+
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new Exception("Please enter a name");
+                }
+
+                string query = "";
+                if (category == "Burger")
+                {
+                    query = "DELETE FROM Burgers WHERE Burger='" + name + "'";
+                }
+                else if (category == "Shake")
+                {
+                    query = "DELETE FROM Shakes WHERE Shake='" + name + "'";
+                }
+                else if (category == "AddOns")
+                {
+                    query = "DELETE FROM AddOns WHERE AddOn='" + name + "'";
+                }
+
+
+                using (OleDbConnection connection = new OleDbConnection(connectionString))
+                {
+                    using (OleDbCommand command = new OleDbCommand(query, connection))
+                    {
+                        connection.Open();
+                        int rowsAffected = command.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                        {
+                            MessageBox.Show("Product removed successfully!");
+                        }
+                        else
+                        {
+                            throw new Exception("Product not found");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        private void UpdateStock()
+        {
+            // Update the DataGridView for the Burger table
+            using (OleDbConnection myConn = new OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb"))
+            {
+                string query = "SELECT * FROM Burgers";
+                OleDbDataAdapter adapter = new OleDbDataAdapter(query, myConn);
+                DataTable table = new DataTable();
+                adapter.Fill(table);
+                ProductsView.DataSource = table;
+            }
+
+            // Update the DataGridView for the Shake table
+            using (OleDbConnection myConn = new OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb"))
+            {
+                string query = "SELECT * FROM Shakes";
+                OleDbDataAdapter adapter = new OleDbDataAdapter(query, myConn);
+                DataTable table = new DataTable();
+                adapter.Fill(table);
+                ProductsView.DataSource = table;
+            }
+            using (OleDbConnection myConn = new OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb"))
+            {
+                string query = "SELECT * FROM AddOns";
+                OleDbDataAdapter adapter = new OleDbDataAdapter(query, myConn);
+                DataTable table = new DataTable();
+                adapter.Fill(table);
+                ProductsView.DataSource = table;
+            }
+        }
+
+        private void iconButtonReset_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, Voucher_Code FROM Voucher", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["Voucher_Code"].Width = 170;
+        }
+
+        private void textBoxName_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void iconButton1_Click(object sender, EventArgs e)
+        {
+            ProductsView.DataSource = null;
+            ProductsView.Rows.Clear();
+            ProductsView.Columns.Clear();
+            ProductsView.Refresh();
+            string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+            OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT ID, Voucher_Code FROM Voucher", connectionString);
+            DataTable dataTable = new DataTable();
+            adapter.Fill(dataTable);
+            ProductsView.DataSource = dataTable;
+            ProductsView.Columns["ID"].Width = 125;
+            ProductsView.Columns["Voucher_Code"].Width = 170;
+        }
+
+        private void addVoucher_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0; Data Source=C:\\Users\\Angel Rose Comajes\\Documents\\Access.accdb";
+                string query = "";
+
+                // Check if textbox is empty
+                if (string.IsNullOrEmpty(voucher.Text))
+                {
+                    throw new Exception("Please fill in all fields");
+                }
+
+                // Check if voucher code already exists
+                using (OleDbConnection connection = new OleDbConnection(connectionString))
+                {
+                    connection.Open();
+
+                    query = "SELECT COUNT(*) FROM Voucher WHERE Voucher_Code = @voucherCode";
+                    using (OleDbCommand checkCommand = new OleDbCommand(query, connection))
+                    {
+                        checkCommand.Parameters.AddWithValue("@voucherCode", voucher.Text);
+                        int count = (int)checkCommand.ExecuteScalar();
+
+                        if (count > 0)
+                        {
+                            throw new Exception("Voucher code already exists");
+                        }
+                    }
+
+                    // Insert voucher code into the database
+                    query = "INSERT INTO Voucher (Voucher_Code) VALUES (@voucherCode)";
+                    using (OleDbCommand insertCommand = new OleDbCommand(query, connection))
+                    {
+                        insertCommand.Parameters.AddWithValue("@voucherCode", voucher.Text);
+                        insertCommand.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show("Voucher added successfully!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+    }
+    
+}
